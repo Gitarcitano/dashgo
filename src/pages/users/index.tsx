@@ -1,13 +1,30 @@
-import { Button, Checkbox, Flex, Icon, Table, Tbody, Td, Th, Thead, Tr, useBreakpointValue } from "@chakra-ui/react";
-import Link from "next/link";
-import { Box, Text } from "@chakra-ui/layout";
-import { Header } from "../../components/Header";
-import { Sidebar } from "../../components/Sidebar";
-import { Heading } from "@chakra-ui/react";
-import { RiAddLine, RiPencilLine } from "react-icons/ri";
-import { Pagination } from "../../components/Pagination";
+import { Box, Text } from '@chakra-ui/layout';
+import {
+  Button,
+  Checkbox,
+  Flex,
+  Icon,
+  Spinner,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  useBreakpointValue,
+  Heading,
+} from '@chakra-ui/react';
+import Link from 'next/link';
+import { RiAddLine, RiPencilLine } from 'react-icons/ri';
 
-export default function UserList() {
+import { Header } from '../../components/Header';
+import { Pagination } from '../../components/Pagination';
+import { Sidebar } from '../../components/Sidebar';
+import { useUsers } from '../../services/hooks/useUsers';
+
+export default function UserList(): JSX.Element {
+  const { data, isLoading, isFetching, error } = useUsers();
+
   const isWideVersion = useBreakpointValue({
     base: false,
     lg: true,
@@ -22,87 +39,80 @@ export default function UserList() {
 
         <Box flex="1" borderRadius={8} bg="gray.800" p="8">
           <Flex mb="8" justify="space-between" algin="center">
-            <Heading size="lg" fontWeight="normal">Usuários</Heading>
+            <Heading size="lg" fontWeight="normal">
+              Usuários
+              {isFetching && !isLoading && <Spinner size="sm" color="gray.500" ml="4" />}
+            </Heading>
 
             <Link href="/users/create" passHref>
-              <Button as="a" size="sm" fontSize="sm" colorScheme="pink" leftIcon={
-                <Icon as={RiAddLine} fontSize="20"/>
-              }>
+              <Button
+                as="a"
+                size="sm"
+                fontSize="sm"
+                colorScheme="pink"
+                leftIcon={<Icon as={RiAddLine} fontSize="20" />}
+              >
                 Criar novo
               </Button>
             </Link>
           </Flex>
 
-          <Table colorScheme="whiteAlpha">
-            <Thead>
-              <Tr>
-                <Th px={["4","4","6"]} color="gray.300" width="8">
-                  <Checkbox colorScheme="pink"/>
-                </Th>
-                <Th>Usuário</Th>
-                { isWideVersion && <Th>Data de cadastro</Th>}
-                <Th width="8" />
-              </Tr>
-            </Thead>
-            <Tbody>
-              <Tr>
-                <Td px={["4","4","6"]}>
-                  <Checkbox colorScheme="pink"/>
-                </Td>
-                <Td>
-                  <Box>
-                    <Text fontWeight="bold">Giovanne Faccio Tarcitano</Text>
-                    <Text fontSize="sm" color="gray.300">giovannetarcitano@gmail.com</Text>
-                  </Box>
-                </Td>
-                { isWideVersion && <Td>28 de Abril, 2021</Td> }
-                <Td p={["4", "4", "6"]}>
-                  <Button as="a" size="sm" fontSize="sm" colorScheme="gray">
-                    <Icon as={RiPencilLine} fontSize={["14","20"]} color="gray.800"/>
-                  </Button>
-                </Td>
-              </Tr>
-              <Tr>
-                <Td px={["4","4","6"]}>
-                  <Checkbox colorScheme="pink"/>
-                </Td>
-                <Td>
-                  <Box>
-                    <Text fontWeight="bold">Giovanne Faccio Tarcitano</Text>
-                    <Text fontSize="sm" color="gray.300">giovannetarcitano@gmail.com</Text>
-                  </Box>
-                </Td>
-                { isWideVersion && <Td>28 de Abril, 2021</Td> }
-                <Td p={["4", "4", "6"]}>
-                  <Button as="a" size="sm" fontSize="sm" colorScheme="gray">
-                    <Icon as={RiPencilLine} fontSize={["14","20"]} color="gray.800"/>
-                  </Button>
-                </Td>
-              </Tr>
-              <Tr>
-                <Td px={["4","4","6"]}>
-                  <Checkbox colorScheme="pink"/>
-                </Td>
-                <Td>
-                  <Box>
-                    <Text fontWeight="bold">Giovanne Faccio Tarcitano</Text>
-                    <Text fontSize="sm" color="gray.300">giovannetarcitano@gmail.com</Text>
-                  </Box>
-                </Td>
-                { isWideVersion && <Td>28 de Abril, 2021</Td> }
-                <Td p={["4", "4", "6"]}>
-                  <Button as="a" size="sm" fontSize="sm" colorScheme="gray">
-                    <Icon as={RiPencilLine} fontSize={["14","20"]} color="gray.800"/>
-                  </Button>
-                </Td>
-              </Tr>
-            </Tbody>
-          </Table>
+          {
+            // eslint-disable-next-line no-nested-ternary
+            isLoading ? (
+              <Flex justify="center">
+                <Spinner />
+              </Flex>
+            ) : error ? (
+              <Flex justify="center">
+                <Text>Falha ao obter os dados</Text>
+              </Flex>
+            ) : (
+              <>
+                <Table colorScheme="whiteAlpha">
+                  <Thead>
+                    <Tr>
+                      <Th px={['4', '4', '6']} color="gray.300" width="8">
+                        <Checkbox colorScheme="pink" />
+                      </Th>
+                      <Th>Usuário</Th>
+                      {isWideVersion && <Th>Data de cadastro</Th>}
+                      <Th width="8" />
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {data.map(user => {
+                      return (
+                        <Tr key={user.id}>
+                          <Td px={['4', '4', '6']}>
+                            <Checkbox colorScheme="pink" />
+                          </Td>
+                          <Td>
+                            <Box>
+                              <Text fontWeight="bold">{user.name}</Text>
+                              <Text fontSize="sm" color="gray.300">
+                                {user.email}
+                              </Text>
+                            </Box>
+                          </Td>
+                          {isWideVersion && <Td>{user.createdAt}</Td>}
+                          <Td p={['4', '4', '6']}>
+                            <Button as="a" size="sm" fontSize="sm" colorScheme="gray">
+                              <Icon as={RiPencilLine} fontSize={['14', '20']} color="gray.800" />
+                            </Button>
+                          </Td>
+                        </Tr>
+                      );
+                    })}
+                  </Tbody>
+                </Table>
 
-          <Pagination />
-
+                <Pagination totalCountOfRegisters={200} currentPage={5} onPageChange={() => {}} />
+              </>
+            )
+          }
         </Box>
       </Flex>
     </Box>
-  )
+  );
 }
